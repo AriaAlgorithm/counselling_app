@@ -15,59 +15,70 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.clo.chat_activity;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class user_login extends AppCompatActivity {
-    EditText Email, Pass;
-    Button Login;
-    String email, password;
+    EditText emailEditText, passwordEditText;
+    Button loginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_login);
 
-        Email = findViewById(R.id.Email);
-        Pass = findViewById(R.id.Password);
-        Login = findViewById(R.id.Login);
+        emailEditText = findViewById(R.id.Email);
+        passwordEditText = findViewById(R.id.Password);
+        loginButton = findViewById(R.id.Login);
 
-        Login.setOnClickListener(new View.OnClickListener() {
+        loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                email = Email.getText().toString();
-                password = Pass.getText().toString();
-
                 loginUser();
             }
         });
     }
 
     private void loginUser() {
+        String email = emailEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
+
+        // Check if email and password are not empty
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(user_login.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Make API request to login
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://lamp.ms.wits.ac.za/home/s2689889/Users_Log_In.php";
+        String url = "https://lamp.ms.wits.ac.za/home/s2689889/Users_Log_in.php";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         if (response.equals("success")) {
-                            Toast.makeText(user_login.this, "Login successful", Toast.LENGTH_SHORT).show();
+                            // Login successful, navigate to chat activity
                             Intent intent = new Intent(user_login.this, chat_activity.class);
                             startActivity(intent);
+                            finish(); // Finish the login activity to prevent going back to it on back press
                         } else {
+                            // Login failed, show error message
                             Toast.makeText(user_login.this, "Login failed", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                // Show error message in case of network error
                 Toast.makeText(user_login.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }) {
             @Override
             protected Map<String, String> getParams() {
+                // Parameters for POST request (email and password)
                 Map<String, String> params = new HashMap<>();
                 params.put("email", email);
                 params.put("password", password);
