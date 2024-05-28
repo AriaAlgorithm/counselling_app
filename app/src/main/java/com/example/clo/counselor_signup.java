@@ -1,12 +1,11 @@
 package com.example.clo;
 
-
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,73 +20,103 @@ import com.android.volley.toolbox.Volley;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class counselor_signup extends AppCompatActivity {
-    EditText Username, Email, Pass, EPass, Type;
-    Button SignUp;
-    String name, email, password, confirmPassword, type;
+    EditText Username, Email, Pass, EPass, type;
+    Button Sign;
+    TextView Error;
+    String name, email, password, word, typeofcounsel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.counselor_signup);
-
+        setContentView(R.layout.counsellor_sign_up);
         Username = findViewById(R.id.Name);
         Email = findViewById(R.id.Email);
-        Type = findViewById(R.id.Type);
+        type = findViewById(R.id.Type);
         Pass = findViewById(R.id.Password);
-        EPass = findViewById(R.id.ConfirmPassword);
-        SignUp = findViewById(R.id.SignUp);
+        EPass = findViewById(R.id.confirm);
+        Sign = findViewById(R.id.SignUp);
+        // Error = findViewById(R.id.status);
 
-        SignUp.setOnClickListener(new View.OnClickListener() {
+
+        TextView textView = findViewById(R.id.singUpClick);
+        textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                name = Username.getText().toString();
-                email = Email.getText().toString();
-                type = Type.getText().toString();
-                password = Pass.getText().toString();
-                confirmPassword = EPass.getText().toString();
-
-                if (password.equals(confirmPassword)) {
-                    registerCounselor();
-                } else {
-                    Toast.makeText(counselor_signup.this, "Passwords do not match", Toast.LENGTH_SHORT).show();
-                }
+                // Perform your action here
+                Intent intent = new Intent(counselor_signup.this, Counellor_LogIn.class);
+                startActivity(intent);
             }
         });
-    }
 
-    private void registerCounselor() {
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://lamp.ms.wits.ac.za/home/s2689889/Counselor_Sign_Up.php";
+        Sign.setOnClickListener(new View.OnClickListener() {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
+            @Override
+            public void onClick(View v) {
+                //Error.setVisibility(View.GONE);
+                name = String.valueOf(Username.getText());
+                email = String.valueOf(Email.getText());
+                typeofcounsel = String.valueOf(type.getText());
+                password = String.valueOf(Pass.getText());
+                word = String.valueOf(EPass.getText());
+                //SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+                //SharedPreferences.Editor editor = sharedPreferences.edit();
+                //editor.putString("NAME", name);
+                //editor.putString("EMAIL", email);
+                //editor.apply();
+                RequestQueue queue = Volley.newRequestQueue(counselor_signup.this);
+                String url = "https://lamp.ms.wits.ac.za/home/s2651487/Counsellor_Sign_Up.php";
+
+
+
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                if (password.equals(word)) {
+                                    if (response.equals("success")) {
+                                        Toast.makeText(counselor_signup.this, "SignUp successful", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(counselor_signup.this, Counellor_LogIn.class);
+                                        //SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+                                        //SharedPreferences.Editor editor = sharedPreferences.edit();
+                                        //editor.putString("NAME", name);
+                                        //editor.putString("EMAIL", email);
+                                        //editor.apply();
+                                        startActivity(intent);
+                                        finish();
+
+                                    } else {
+                                        Toast.makeText(counselor_signup.this, "Check Information You Gave me", Toast.LENGTH_SHORT).show();
+                                    }// end of else
+                                }  // end of if
+                                else {
+                                    Toast.makeText(counselor_signup.this, "Passwords Do Not Match", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }, new Response.ErrorListener() {
                     @Override
-                    public void onResponse(String response) {
-                        if (response.equals("success")) {
-                            Toast.makeText(counselor_signup.this, "Signup successful", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(counselor_signup.this, counselor_login.class);
-                            startActivity(intent);
-                        } else {
-                            Toast.makeText(counselor_signup.this, "Signup failed", Toast.LENGTH_SHORT).show();
-                        }
+                    public void onErrorResponse(VolleyError volleyError) {
+
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(counselor_signup.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+
+
+                }) {
+                    protected Map<String, String> getParams() {
+                        Map<String, String> paramV = new HashMap<>();
+                        paramV.put("FullName", name);
+                        paramV.put("Email", email);
+                        paramV.put("Type", typeofcounsel);
+                        paramV.put("Password", password);
+                        return paramV;
+                    }
+                };
+                queue.add(stringRequest);
             }
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("name", name);
-                params.put("email", email);
-                params.put("type", type);
-                params.put("password", password);
-                return params;
-            }
-        };
-        queue.add(stringRequest);
+
+
+        });
+
     }
+
 }
